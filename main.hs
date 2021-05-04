@@ -3,8 +3,9 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 import Yesod
+import Yesod.Static
 
-data App = App
+data App = App {getStatic :: Static}
 
 mkYesod "App" [parseRoutes|
 / HomeR GET
@@ -28,6 +29,7 @@ mkYesod "App" [parseRoutes|
 /Artwork/Origami OrigamiR GET
 /Artwork/Calligraphy CalligraphyR GET
 /Artwork/Fashion FashionR GET
+/static StaticR Static getStatic
 |]
 
 instance Yesod App
@@ -50,8 +52,7 @@ getHomeR = defaultLayout $ do
          body {
             font-family: Arial;
             font-size: 16px;
-            background-image: url("light_green1.jpg") fixed center;
-            background-color: #00ff7f;
+            background-image: url(@{StaticR backgrounds_lightgreen2_jpg});
          }
 
          .sidebar {
@@ -219,4 +220,6 @@ getFashionR :: Handler Html
 getFashionR = defaultLayout [whamlet|A shwocase of some of my fashion ensembles|]
 
 main :: IO ()
-main = warp 3000 App
+main = do
+   static@(Static settings) <- static "static"
+   warp 3000 $ App static
